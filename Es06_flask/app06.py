@@ -3,6 +3,7 @@ import AlphaBot
 import threading
 import time
 import RPi.GPIO as GPIO
+import sqlite3
 
 app=Flask(__name__)
 robot=AlphaBot.AlphaBot()
@@ -11,6 +12,37 @@ robot.stop()
 #pin sensori
 DR=16
 DL=19
+
+#db movimenti
+DB="./db1_comandi.db"
+
+def access_DB(db, key):
+    con= sqlite3.connect(db)
+    cur= con.cursor()
+    
+    res=cur.execute(f"SELECT command_description FROM movement WHERE key='{key}'")
+
+    record=res.fetchall()
+    #print(record)
+
+    commands=record[0][0].split("|")
+    #print(command)
+    con.close()
+
+    return commands
+
+def run_db(comands):
+    for com in comands:
+        move=com.split(",")
+        print(move)
+        diz_command[move[0]]()
+        time.sleep(float(move[1]))
+
+diz_command={"forward":robot.forward, 
+             "backward":robot.backward, 
+             "left":robot.left, 
+             "right":robot.right,
+             "stop":robot.stop}
 
 #gestione dello stato dei sensori
 statoSensori=False
@@ -63,6 +95,18 @@ def index():
             return render_template("index.html")
         elif "Stop" in request.form:
             robot.stop()
+            return render_template("index.html")
+        elif "Quadrato" in request.form:
+            comand=access_DB(DB, "q")
+            run_db(comand)
+            return render_template("index.html")
+        elif "L" in request.form:
+            comand=access_DB(DB, "l")
+            run_db(comand)
+            return render_template("index.html")
+        elif "Triangolo" in request.form:
+            comand=access_DB(DB, "t")
+            run_db(comand)
             return render_template("index.html")
     elif request.method=="GET":
         return render_template("index.html")
