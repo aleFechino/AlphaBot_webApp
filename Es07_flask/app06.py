@@ -1,11 +1,18 @@
-from flask import Flask, render_template,request
+from flask import Flask, render_template,request, redirect, url_for
+from flask_login import (LoginManager, UserMixin, login_user, login_required, logout_user, current_user)
 import AlphaBot 
 import threading
 import time
 import RPi.GPIO as GPIO
-import sqlite3
+import sqlite3 
 
 app=Flask(__name__)
+app.secret_key="chiaveSegreta"
+
+login_manager=LoginManager()
+login_manager.init_app(app)
+login_manager.login_view="login"#senza estensione .html
+
 robot=AlphaBot.AlphaBot()
 robot.stop()
 
@@ -14,7 +21,20 @@ DR=16
 DL=19
 
 #db movimenti
-DB="./db1_comandi.db"
+DB_movimenti="./db1_comandi.db"
+
+#db users
+DB_users="./db_users.db"
+
+class User(UserMixin):
+    def __init__(self, id):
+        self.id=id
+
+@login_manager.user_loader
+def load_user(user_id):
+    if user_id in #query del db
+        return User.get(user_id) #userget restituisce una stringa
+
 
 def access_DB(db, key):
     con= sqlite3.connect(db)
@@ -72,6 +92,10 @@ def funzione_sensori():
 
 
 @app.route("/",methods=["GET","POST"])
+@app.route("/login",methods=["GET","POST"])
+
+def login # documentazione: flask-login.readthedocs.io
+
 def index():
     global statoSensori
     global salvataggioBottoni
@@ -89,13 +113,13 @@ def index():
         elif "Stop" in request.form:
             robot.stop()
         elif "Quadrato" in request.form:
-            comand=access_DB(DB, "q")
+            comand=access_DB(DB_movimenti, "q")
             run_db(comand)
         elif "L" in request.form:
-            comand=access_DB(DB, "l")
+            comand=access_DB(DB_movimenti, "l")
             run_db(comand)
         elif "Triangolo" in request.form:
-            comand=access_DB(DB, "t")
+            comand=access_DB(DB_movimenti, "t")
             run_db(comand)
     return render_template("index.html")
     
