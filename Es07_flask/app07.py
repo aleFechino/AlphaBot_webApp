@@ -1,4 +1,4 @@
-from flask import Flask, render_template,request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for
 from flask_login import (LoginManager, UserMixin, login_user, login_required, logout_user, current_user)
 import AlphaBot 
 import threading
@@ -7,11 +7,12 @@ import RPi.GPIO as GPIO
 import sqlite3 
 
 app=Flask(__name__)
-app.secret_key="chiaveSegreta"
+app.secret_key="chiaveSegreta" #chiave che scegliamo noi
 
+#inizializzo la pagina
 login_manager=LoginManager()
 login_manager.init_app(app)
-login_manager.login_view="login"#senza estensione .html
+login_manager.login_view="login" #senza estensione .html
 
 robot=AlphaBot.AlphaBot()
 robot.stop()
@@ -30,10 +31,13 @@ class User(UserMixin):
     def __init__(self, id):
         self.id=id
 
+USERS = {"admin": {"password":"AlphaBot"}} # la classe UserMixin ha bisogno di un dizionario di dizzionari.
+
 @login_manager.user_loader
 def load_user(user_id):
-    if user_id in #query del db
-        return User.get(user_id) #userget restituisce una stringa
+    if user_id in USERS: #query del db
+        return User(user_id) #userget restituisce una stringa        User.get(user_id)
+    return None
 
 
 def access_DB(db, key):
@@ -93,14 +97,36 @@ def funzione_sensori():
 
 @app.route("/",methods=["GET","POST"])
 @app.route("/login",methods=["GET","POST"])
+def login(): # documentazione: flask-login.readthedocs.io
+    if request.method=="POST":
+        username=request.form["username"]
+        pwd=request.form["pwd"]
+        # query per verificare che user e pwd siano giusti
+        if username in USERS and USERS[username]["password"]==pwd:
+            login_user(User(username))
+            return redirect(url_for("control"))
+        return render_template("login.html")
+    else:
+        return render_template("login.html")
+    
 
-def login # documentazione: flask-login.readthedocs.io
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("login"))
+    #return render_template("login.html")
 
-def index():
+@app.route("/control", methods=["GET","POST"])
+@login_required
+def control():
     global statoSensori
     global salvataggioBottoni
 
     if request.method=="POST":
+        if "logout" in request.form:
+            return redirect(url_for("logout"))
+        
         salvataggioBottoni=request.form
         if "Avanti" in request.form:
             robot.forward()
@@ -121,7 +147,7 @@ def index():
         elif "Triangolo" in request.form:
             comand=access_DB(DB_movimenti, "t")
             run_db(comand)
-    return render_template("index.html")
+    return render_template("control.html", user=current_user.id)
     
 def main():
     sensorThread= threading.Thread(target=funzione_sensori, daemon=True)

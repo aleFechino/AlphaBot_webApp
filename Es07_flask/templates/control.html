@@ -7,12 +7,15 @@
     <title>αBot</title>
 </head>
 <body>
+    <h1>Utente: {{user}}</h1>
 
     <h2>αBot</h2>
     <h3>Controllo movimento</h3>
 
+
     <!-- CONTROLLI DIREZIONALI -->
-    <form method="post" action="/" class="controls">
+    <form method="post" class="controls">
+        <button type="submit" name="logout">Logout</button>
         <div class="grid">
             <div></div>
             <button type="submit" name="Avanti" class="btn arrow">↑</button>
@@ -30,7 +33,7 @@
 
     <!-- MOVIMENTI SPECIALI -->
     <h3>Movimenti speciali</h3>
-    <form method="post" action="/" class="specials">
+    <form method="post" class="specials">
         <button type="submit" name="Quadrato">◻ Quadrato</button>
         <button type="submit" name="L">L</button>
         <button type="submit" name="Triangolo">△ Triangolo</button>
