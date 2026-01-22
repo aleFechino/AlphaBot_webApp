@@ -31,16 +31,14 @@ class User(UserMixin):
     def __init__(self, id):
         self.id=id
 
-USERS = {"admin": {"password":"AlphaBot"}} # la classe UserMixin ha bisogno di un dizionario di dizzionari.
-
 @login_manager.user_loader
 def load_user(user_id):
     if user_id in USERS: #query del db
         return User(user_id) #userget restituisce una stringa        User.get(user_id)
     return None
 
-
-def access_DB(db, key):
+#FUNZIONI PER IL DB MOVIMENTI
+def access_DB_movimenti(db, key):
     con= sqlite3.connect(db)
     cur= con.cursor()
     
@@ -55,7 +53,7 @@ def access_DB(db, key):
 
     return commands
 
-def run_db(comands):
+def run_db_movimenti(comands):
     for com in comands:
         move=com.split(",")
         diz_command[move[0]]()
@@ -66,6 +64,20 @@ diz_command={"forward":robot.forward,
              "left":robot.left, 
              "right":robot.right,
              "stop":robot.stop}
+
+#FUNZIONI PER IL DB USER
+def access_DB_user(db):
+    con= sqlite3.connect(db)
+    cur= con.cursor()
+
+    res= cur.execute(f"SELECT user, password FROM Users")
+    record=res.fetchall()
+    return record
+
+#USERS = {"admin": {"password":"AlphaBot"}} # la classe UserMixin ha bisogno di un dizionario di dizzionari.
+rows=access_DB_user(DB_users)
+USERS= {user:{"password":psw} for user, psw in rows}
+print(USERS)
 
 #gestione dello stato dei sensori
 statoSensori=False
@@ -128,8 +140,10 @@ def control():
             return redirect(url_for("logout"))
         
         salvataggioBottoni=request.form
-        if "Avanti" in request.form:
-            robot.forward()
+        # if "Avanti" in request.form:
+        #     robot.forward()
+        if "AVANTISSIMO" in request.form:
+            print("Pulsante")
         elif "Indietro" in request.form:
             robot.backward()
         elif "Destra" in request.form:
@@ -139,14 +153,14 @@ def control():
         elif "Stop" in request.form:
             robot.stop()
         elif "Quadrato" in request.form:
-            comand=access_DB(DB_movimenti, "q")
-            run_db(comand)
+            comand=access_DB_movimenti(DB_movimenti, "q")
+            run_db_movimenti(comand)
         elif "L" in request.form:
-            comand=access_DB(DB_movimenti, "l")
-            run_db(comand)
+            comand=access_DB_movimenti(DB_movimenti, "l")
+            run_db_movimenti(comand)
         elif "Triangolo" in request.form:
-            comand=access_DB(DB_movimenti, "t")
-            run_db(comand)
+            comand=access_DB_movimenti(DB_movimenti, "t")
+            run_db_movimenti(comand)
     return render_template("control.html", user=current_user.id)
     
 def main():
