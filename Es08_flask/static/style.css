@@ -188,3 +188,10 @@ form label {
     color: #c7c7c7;
     letter-spacing: 0.5px;
 }
+
+
+.btn.active {
+    background-color: #4CAF50;
+    transform: scale(0.95);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}

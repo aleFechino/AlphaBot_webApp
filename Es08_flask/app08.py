@@ -84,23 +84,26 @@ statoSensori=False
 
 salvataggioBottoni=""
 
+movimentoAttivo= None
+
 #funzione per gestire i sensori
 def funzione_sensori():
     global statoSensori
-    global salvataggioBottoni
+    global movimentoAttivo
     #setto le resistenze in pull up
     GPIO.setup(DR, GPIO.IN, GPIO.PUD_UP)
     GPIO.setup(DL, GPIO.IN, GPIO.PUD_UP)
-    print("Avvio tread")
+    print("Avvio thread")
     while True:
         DR_status= GPIO.input(DR)
         DL_status= GPIO.input(DL)
 
         if(DR_status==0 or DL_status==0):
-            if  "Avanti" in salvataggioBottoni:
+            if movimentoAttivo == "Avanti":  # usa movimentoAttivo invece di salvataggioBottoni
                 print("rilevato ostacolo")
                 statoSensori=True
                 robot.stop()
+                movimentoAttivo = None
         else:
             if statoSensori:
                 statoSensori=False
@@ -134,34 +137,48 @@ def logout():
 def control():
     global statoSensori
     global salvataggioBottoni
+    global movimentoAttivo  # aggiungi questa
 
     if request.method=="POST":
         if "logout" in request.form:
             return redirect(url_for("logout"))
         
         salvataggioBottoni=request.form
-        # if "Avanti" in request.form:
-        #     robot.forward()
-        if "AVANTISSIMO" in request.form:
-            print("Pulsante")
+        
+        if "Avanti" in request.form:
+            if not statoSensori:  # controlla che non ci siano ostacoli
+                movimentoAttivo = "Avanti"
+                robot.forward()
         elif "Indietro" in request.form:
+            movimentoAttivo = "Indietro"
             robot.backward()
         elif "Destra" in request.form:
+            movimentoAttivo = "Destra"
             robot.right()
         elif "Sinistra" in request.form:
+            movimentoAttivo = "Sinistra"
             robot.left()
         elif "Stop" in request.form:
+            movimentoAttivo = None
             robot.stop()
         elif "Quadrato" in request.form:
+            movimentoAttivo = "Quadrato"
             comand=access_DB_movimenti(DB_movimenti, "q")
             run_db_movimenti(comand)
+            movimentoAttivo = None
         elif "L" in request.form:
+            movimentoAttivo = "L"
             comand=access_DB_movimenti(DB_movimenti, "l")
             run_db_movimenti(comand)
+            movimentoAttivo = None
         elif "Triangolo" in request.form:
+            movimentoAttivo = "Triangolo"
             comand=access_DB_movimenti(DB_movimenti, "t")
             run_db_movimenti(comand)
+            movimentoAttivo = None
+            
     return render_template("control.html", user=current_user.id)
+
     
 def main():
     sensorThread= threading.Thread(target=funzione_sensori, daemon=True)

@@ -140,10 +140,8 @@ def control():
             return redirect(url_for("logout"))
         
         salvataggioBottoni=request.form
-        # if "Avanti" in request.form:
-        #     robot.forward()
-        if "AVANTISSIMO" in request.form:
-            print("Pulsante")
+        if "Avanti" in request.form:
+             robot.forward()
         elif "Indietro" in request.form:
             robot.backward()
         elif "Destra" in request.form:
