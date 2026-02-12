@@ -22,6 +22,10 @@ robot.stop()
 DR=16
 DL=19
 
+# costanti di velocità
+AVANTI=100
+CURVA=30
+
 #db movimenti
 DB_movimenti="./db1_comandi.db"
 
@@ -150,16 +154,20 @@ def control():
             #if not statoSensori:  # controlla che non ci siano ostacoli
                 # movimentoAttivo = "Avanti"
                 # robot.forward()
+            robot.setMotor(AVANTI, AVANTI)
             robot.forward()
             movimentoAttivo = "Avanti"
         elif "Indietro" in request.form:
             movimentoAttivo = "Indietro"
+            robot.setMotor(-AVANTI, -AVANTI)
             robot.backward()
         elif "Destra" in request.form:
             movimentoAttivo = "Destra"
+            robot.setMotor(CURVA, CURVA)
             robot.right()
         elif "Sinistra" in request.form:
             movimentoAttivo = "Sinistra"
+            robot.setMotor(CURVA, CURVA)
             robot.left()
         elif "Stop" in request.form:
             movimentoAttivo = None
