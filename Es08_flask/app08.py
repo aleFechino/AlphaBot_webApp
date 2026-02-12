@@ -5,9 +5,10 @@ import threading
 import time
 import RPi.GPIO as GPIO
 import sqlite3 
+import secrets
 
 app=Flask(__name__)
-app.secret_key="chiaveSegreta" #chiave che scegliamo noi
+app.secret_key= secrets.token_hex(32) #chiave generata da 64 caratteri esadecimali casuali
 
 #inizializzo la pagina
 login_manager=LoginManager()
@@ -146,9 +147,11 @@ def control():
         salvataggioBottoni=request.form
         
         if "Avanti" in request.form:
-            if not statoSensori:  # controlla che non ci siano ostacoli
-                movimentoAttivo = "Avanti"
-                robot.forward()
+            #if not statoSensori:  # controlla che non ci siano ostacoli
+                # movimentoAttivo = "Avanti"
+                # robot.forward()
+            robot.forward()
+            movimentoAttivo = "Avanti"
         elif "Indietro" in request.form:
             movimentoAttivo = "Indietro"
             robot.backward()
