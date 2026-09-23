@@ -22,7 +22,10 @@ robot.stop()
 DR=16
 DL=19
 
+
 # costanti di velocitÃ 
+
+# costanti di velocità
 AVANTI=100
 CURVA=30
 
